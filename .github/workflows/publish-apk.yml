@@ -5,7 +5,6 @@ on:
     branches:
       - master
     paths:
-      - '.build/**'
       - '.github/workflows/publish-apk.yml'
 
 permissions:
@@ -18,18 +17,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Reassemble APK
+      - name: Download built APK artifact
         shell: bash
         run: |
-          cat .build/apk_*.b64 > /tmp/ring.apk.b64
-          base64 -d /tmp/ring.apk.b64 > RingAutoBack-FireTV.apk
+          curl -fL 'https://sdmntprwestcentralus.oaiusercontent.com/files/00000000-2f40-81fb-97e2-f4a93de091bc/raw?se=2026-09-25T06%3A43%3A03Z&sp=r&sv=2026-02-06&sr=b&scid=dcf8fa4e-abc9-5b96-bc65-5d602109b3a9&skoid=80e81ea6-3c08-46f9-bd84-b87176742bcd&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-25T06%3A05%3A23Z&ske=2026-09-26T06%3A05%3A23Z&sks=b&skv=2026-02-06&sig=P50BD9SByRlLxIW8ViS893PN73sjXZgnxQgT3b5vXqE%3D' -o /tmp/RingAutoBack-release.zip
+          unzip -j /tmp/RingAutoBack-release.zip '*.apk' -d /tmp/ring-apk
+          cp /tmp/ring-apk/*.apk RingAutoBack-FireTV.apk
           test -s RingAutoBack-FireTV.apk
+          unzip -t RingAutoBack-FireTV.apk
 
-      - name: Verify APK archive
-        shell: bash
-        run: unzip -t RingAutoBack-FireTV.apk
-
-      - name: Commit APK
+      - name: Publish APK
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
